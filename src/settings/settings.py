@@ -20,3 +20,15 @@ JWT_TOKEN_SETTINGS = {
     "ALGORITHM": os.getenv("ALGORITHM"),
     "ACCESS_TOKEN_EXPIRE_MINUTES": os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"),
 }
+
+# Services Communication settings
+SERVICES_COMMUNICATION_SETTINGS = {
+    "USER_MANAGEMENT_SERVICE": {
+        "URL": os.getenv("USER_MANAGEMENT_SERVICE_URL"),
+        "ENDPOINTS": {
+            "CUSTOMER": os.getenv("CUSTOMER_ENDPOINT"),
+            "USER": os.getenv("USER_ENDPOINT"),
+            "COFFEE_SHOP": os.getenv("COFFEE_SHOP_ENDPOINT"),
+        },
+    },
+}
