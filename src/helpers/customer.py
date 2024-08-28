@@ -18,13 +18,13 @@ def _get_or_create_customer(
     *Returns:
         the created/found Customer instance
     """
-    endpoint_url = (
+    get_or_create_customer_endpoint = (
         f"{SERVICES_COMMUNICATION_SETTINGS['USER_MANAGEMENT_SERVICE']['URL']}"
         f"{SERVICES_COMMUNICATION_SETTINGS['USER_MANAGEMENT_SERVICE']['ENDPOINTS']['CUSTOMER']}"
     )
     response = send_request(
         action="POST",
-        url=endpoint_url,
+        url=get_or_create_customer_endpoint,
         payload=request.dict(),
         auth_token=auth_token,
     )
