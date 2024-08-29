@@ -26,3 +26,16 @@ class ChefOrderReport(BaseModel):
     class Config:
         orm_mode = True
         from_attributes = True
+
+
+class IssuerOrderReport(BaseModel):
+    """
+    pydantic model for issuer order report
+    """
+
+    issuer_id: int
+    issued_orders: int
+
+    class Config:
+        orm_mode = True
+        from_attributes = True

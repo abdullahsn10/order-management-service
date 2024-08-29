@@ -98,3 +98,51 @@ def list_chefs_orders(
             query = query.order_by(order_by)  # default asc
 
     return query.all()
+
+
+def list_issuers_orders(
+    db: Session,
+    coffee_shop_id: int,
+    from_date: date,
+    to_date: date,
+    order_by: str = None,
+    sort: str = None,
+) -> list[schemas.IssuerOrderReport]:
+    """
+    This helper function lists all issuers along with their issued orders
+    *Args:
+        db (Session): SQLAlchemy Session
+        coffee_shop_id (int): coffee shop id to filter issuers
+        from_date (date): start date to filter orders
+        to_date (date): end date to filter orders
+        order_by (str): field to order by
+        sort (str): sort order
+    *Returns:
+        list[schemas.IssuerOrderReport]: list of issuers along with their issued orders
+    """
+    query = (
+        db.query(
+            (models.Order.issuer_id),
+            func.coalesce(func.count(func.distinct(models.Order.id)), 0).label(
+                "issued_orders"
+            ),
+        )
+        .select_from(models.Order)
+        .outerjoin(models.OrderItem, models.Order.id == models.OrderItem.order_id)
+        .join(models.MenuItem, models.OrderItem.item_id == models.MenuItem.id)
+        .filter(
+            models.MenuItem.coffee_shop_id == coffee_shop_id,
+            models.Order.issue_date >= from_date,
+            models.Order.issue_date <= to_date,
+            models.Order.issuer_id != None,
+        )
+        .group_by(models.Order.issuer_id)
+    )
+
+    if order_by:
+        if sort == "desc":
+            query = query.order_by(desc(order_by))
+        else:
+            query = query.order_by(order_by)  # default asc
+
+    return query.all()
