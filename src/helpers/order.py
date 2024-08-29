@@ -122,3 +122,36 @@ def place_an_order(
         customer_phone_no=created_customer_instance.phone_no,
         status=created_order.status,
     )
+
+
+def find_order(order_id: int, db: Session, coffee_shop_id: int = None) -> models.Order:
+    """
+    This helper function used to find a specific order
+    *Args:
+        order_id (int): the order id needed to be found
+        db (Session): a database session
+        coffee_shop_id (int): id of the coffee shop to find the order for
+    *Returns:
+        the found order if it exists, raise OrderServiceException otherwise
+    """
+    query = (
+        db.query(models.Order)
+        .options(joinedload(models.Order.items))
+        .filter(models.Order.id == order_id)
+    )
+    if coffee_shop_id:
+        query = (
+            query.join(models.OrderItem)
+            .join(models.MenuItem)
+            .filter(
+                models.MenuItem.coffee_shop_id == coffee_shop_id,
+                models.OrderItem.item_id == models.MenuItem.id,
+            )
+        )
+    found_order = query.first()
+    if not found_order:
+        raise OrderServiceException(
+            message=f"This order with id ={order_id} does not exist",
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+    return found_order

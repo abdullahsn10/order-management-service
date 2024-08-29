@@ -42,3 +42,28 @@ def place_an_order_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
+
+
+@router.get("/{order_id}", response_model=schemas.OrderGETResponse)
+def get_order_endpoint(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: schemas.TokenData = Depends(
+        require_role([UserRole.CHEF, UserRole.CASHIER, UserRole.ADMIN])
+    ),
+):
+    """
+    GET endpoint to get a specific order
+    """
+    try:
+        return order.find_order(
+            order_id=order_id,
+            coffee_shop_id=current_user.coffee_shop_id,
+            db=db,
+        )
+    except OrderServiceException as se:
+        raise HTTPException(status_code=se.status_code, detail=se.message)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
