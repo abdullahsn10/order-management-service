@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from src import schemas, models
 from fastapi import status
 from src.utils.api_call import send_request
-from src.settings.settings import SERVICES_COMMUNICATION_SETTINGS
+from src.settings.settings import CUSTOMER_ENDPOINT
 
 
 def _get_or_create_customer(
@@ -18,13 +18,10 @@ def _get_or_create_customer(
     *Returns:
         the created/found Customer instance
     """
-    get_or_create_customer_endpoint = (
-        f"{SERVICES_COMMUNICATION_SETTINGS['USER_MANAGEMENT_SERVICE']['URL']}"
-        f"{SERVICES_COMMUNICATION_SETTINGS['USER_MANAGEMENT_SERVICE']['ENDPOINTS']['CUSTOMER']}"
-    )
+
     response = send_request(
         action="POST",
-        url=get_or_create_customer_endpoint,
+        url=CUSTOMER_ENDPOINT,
         payload=request.dict(),
         auth_token=auth_token,
     )

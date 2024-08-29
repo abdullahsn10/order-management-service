@@ -22,13 +22,10 @@ JWT_TOKEN_SETTINGS = {
 }
 
 # Services Communication settings
-SERVICES_COMMUNICATION_SETTINGS = {
-    "USER_MANAGEMENT_SERVICE": {
-        "URL": os.getenv("USER_MANAGEMENT_SERVICE_URL"),
-        "ENDPOINTS": {
-            "CUSTOMER": os.getenv("CUSTOMER_ENDPOINT"),
-            "USER": os.getenv("USER_ENDPOINT"),
-            "COFFEE_SHOP": os.getenv("COFFEE_SHOP_ENDPOINT"),
-        },
-    },
-}
+USER_SERVICE_BASE_URL = os.getenv("USER_SERVICE_BASE_URL")
+
+
+# ENDPOINTS
+CUSTOMER_ENDPOINT = USER_SERVICE_BASE_URL + "/customers"
+USER_ENDPOINT = USER_SERVICE_BASE_URL + "/users"
+COFFEE_SHOP_ENDPOINT = USER_SERVICE_BASE_URL + "/coffee-shops"

@@ -1,5 +1,6 @@
 import requests
 from typing import Any
+from src.exceptions.exception import OrderServiceException
 
 
 def send_request(
@@ -21,7 +22,14 @@ def send_request(
         "content-type": "application/json",
         "Authorization": f"Bearer {auth_token}",
     }
-
-    response = requests.request(method=action, url=url, headers=headers, json=payload)
-    response.raise_for_status()
-    return response
+    try:
+        response = requests.request(
+            method=action, url=url, headers=headers, json=payload
+        )
+        response.raise_for_status()
+        return response
+    except requests.exceptions.HTTPError as http_err:
+        raise OrderServiceException(
+            message=http_err.response.json().get("detail"),
+            status_code=http_err.response.status_code,
+        )
