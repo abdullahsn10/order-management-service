@@ -8,6 +8,7 @@ from src.exceptions import OrderServiceException
 from src.helpers import customer, menu_item
 from src.models.order import OrderStatus
 from collections import defaultdict
+from src.settings.definition import ROLE_STATUS_MAPPING
 
 
 def _validate_order_items(
@@ -226,3 +227,46 @@ def get_all_orders(
         page_size=size,
         orders=all_orders,
     )
+
+
+def _validate_status_change(new_status: str, user_role: str) -> None:
+    """
+    This helper function used to validate the change in the status of the order
+    *Args:
+        new_status (OrderStatus): the new status of the order
+        user_role (UserRole): the role of the user who tries to change the statu
+    *Returns:
+        raise an OrderServiceException in case of violation
+    """
+
+    if new_status not in ROLE_STATUS_MAPPING[user_role]:
+        raise OrderServiceException(
+            message="Unacceptable change of the status",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+def update_order_status(
+    request: schemas.OrderStatusPATCHRequestBody,
+    order_id: int,
+    user_role: str,
+    coffee_shop_id: int,
+    db: Session,
+) -> None:
+    """
+    This helper function used to update an order status, it applies conditions on
+    the new status of the order along with the role of the user who
+    tries to change this status
+    *Args:
+        request (schemas.OrderStatusPATCHRequestBody): the request body which contains the new status
+        order_id (int): the order id needed to be changed
+        coffee_shop_id (int): id of the coffee shop to find the order for
+        user_role (UserRole): the role of the user needs to update the order's status
+        db (Session): a database session
+    *Returns:
+        None in case of success, raise OrderServiceException in case of any failure
+    """
+    found_order = find_order(order_id=order_id, coffee_shop_id=coffee_shop_id, db=db)
+    _validate_status_change(new_status=request.status.value, user_role=user_role)
+    found_order.status = request.status
+    db.commit()

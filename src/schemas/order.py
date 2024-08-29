@@ -53,3 +53,11 @@ class PaginatedOrderResponse(BaseModel):
     page: int
     page_size: int
     orders: list[OrderGETResponse]
+
+
+class OrderStatusPATCHRequestBody(BaseModel):
+    """
+    pydantic schema for the order Status in PATCH request body
+    """
+
+    status: OrderStatus
