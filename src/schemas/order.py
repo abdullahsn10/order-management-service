@@ -25,3 +25,31 @@ class OrderPOSTResponse(BaseModel):
     id: int
     customer_phone_no: str
     status: OrderStatus
+
+
+class OrderGETResponse(BaseModel):
+    """
+    pydantic schema for the order in GET response body
+    """
+
+    id: int
+    issue_date: datetime
+    issuer_id: int
+    status: OrderStatus
+    customer_id: int
+    items: list[MenuItemInGETOrderResponseBody]
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+
+class PaginatedOrderResponse(BaseModel):
+    """
+    pydantic schema for the paginated orders in GET response body
+    """
+
+    total_count: int
+    page: int
+    page_size: int
+    orders: list[OrderGETResponse]
