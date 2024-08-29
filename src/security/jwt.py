@@ -38,6 +38,7 @@ def verify_token(token: str, credentials_exception) -> schemas.TokenData:
             id=payload["id"],
             coffee_shop_id=payload["coffee_shop_id"],
             branch_id=payload["branch_id"],
+            token_value=token,
         )
         return token_data
     except jwt.InvalidTokenError:

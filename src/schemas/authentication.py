@@ -21,3 +21,4 @@ class TokenData(BaseModel):
     role: UserRole
     branch_id: int
     coffee_shop_id: int
+    token_value: str = None
