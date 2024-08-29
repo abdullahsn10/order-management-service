@@ -3,7 +3,7 @@ from src.settings.settings import FIND_USER_ENDPOINT
 from src.utils.api_call import send_request
 
 
-def find_user(user_id: int, auth_token: str) -> schemas.UserResponse:
+def _find_user(user_id: int, auth_token: str) -> schemas.UserResponse:
     """
     This helper function used to send an API request to User Management Service
     to find a user by id

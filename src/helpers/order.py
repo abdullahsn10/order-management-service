@@ -290,7 +290,7 @@ def assign_order(
         None in case of success, raise ShopsAppException in case of any failure
     """
     found_order = find_order(order_id=order_id, db=db, coffee_shop_id=coffee_shop_id)
-    found_user = user.find_user(user_id=chef_id, auth_token=auth_token)
+    found_user = user._find_user(user_id=chef_id, auth_token=auth_token)
     if found_user.role != UserRole.CHEF:
         raise OrderServiceException(
             message="The assigner must be a chef",
