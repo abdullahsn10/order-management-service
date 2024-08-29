@@ -13,7 +13,7 @@ def list_customers_orders(
     sort: str = None,
 ) -> list[schemas.CustomerOrderReport]:
     """
-    This helper function lists all customers along with their total orders or total paid amount
+    This helper function lists all customers along with their total orders and total paid amount
     *Args:
         db (Session): SQLAlchemy Session
         coffee_shop_id (int): coffee shop id to filter customers
