@@ -96,3 +96,31 @@ def get_all_orders_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
+
+
+@router.patch("/{order_id}/status")
+def update_order_status_endpoint(
+    request: schemas.OrderStatusPATCHRequestBody,
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: schemas.TokenData = Depends(
+        require_role([UserRole.CHEF, UserRole.CASHIER])
+    ),
+):
+    """
+    PATCH endpoint to update the status of a specific order
+    """
+    try:
+        order.update_order_status(
+            request=request,
+            coffee_shop_id=current_user.coffee_shop_id,
+            db=db,
+            order_id=order_id,
+            user_role=current_user.role.value,
+        )
+    except OrderServiceException as se:
+        raise HTTPException(status_code=se.status_code, detail=se.message)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
