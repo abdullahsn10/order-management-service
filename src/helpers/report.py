@@ -50,3 +50,51 @@ def list_customers_orders(
             query = query.order_by(order_by)  # default asc
 
     return query.all()
+
+
+def list_chefs_orders(
+    db: Session,
+    coffee_shop_id: int,
+    from_date: date,
+    to_date: date,
+    order_by: str = None,
+    sort: str = None,
+) -> list[schemas.ChefOrderReport]:
+    """
+    This helper function lists all chefs along with their served orders
+    *Args:
+        db (Session): SQLAlchemy Session
+        coffee_shop_id (int): coffee shop id to filter chefs
+        from_date (date): start date to filter orders
+        to_date (date): end date to filter orders
+        order_by (str): field to order by
+        sort (str): sort order
+    *Returns:
+        list[schemas.ChefOrderReport]: list of chefs along with their served orders
+    """
+    query = (
+        db.query(
+            (models.Order.assigner_id).label("chef_id"),
+            func.coalesce(func.count(func.distinct(models.Order.id)), 0).label(
+                "served_orders"
+            ),
+        )
+        .select_from(models.Order)
+        .outerjoin(models.OrderItem, models.Order.id == models.OrderItem.order_id)
+        .join(models.MenuItem, models.OrderItem.item_id == models.MenuItem.id)
+        .filter(
+            models.MenuItem.coffee_shop_id == coffee_shop_id,
+            models.Order.issue_date >= from_date,
+            models.Order.issue_date <= to_date,
+            models.Order.assigner_id != None,
+        )
+        .group_by(models.Order.assigner_id)
+    )
+
+    if order_by:
+        if sort == "desc":
+            query = query.order_by(desc(order_by))
+        else:
+            query = query.order_by(order_by)  # default asc
+
+    return query.all()
