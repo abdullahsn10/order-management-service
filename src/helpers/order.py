@@ -155,3 +155,74 @@ def find_order(order_id: int, db: Session, coffee_shop_id: int = None) -> models
             status_code=status.HTTP_404_NOT_FOUND,
         )
     return found_order
+
+
+def _find_all_orders(
+    db: Session,
+    coffee_shop_id: int,
+    size: int,
+    page: int,
+    status: list[OrderStatus] = None,
+) -> tuple[list[models.Order], int]:
+    """
+    This helper function used to find all orders in the coffee_shop with specific status
+    and apply a pagination on the resulted orders
+    *Args:
+        db (Session): a database session
+        coffee_shop_id (int): id of the coffee shop to find the orders for
+        status (str): the status of the orders to find
+        size (int): the maximum number of orders to return
+        page (int): the page number, needed to calculate the offset to skip
+    *Returns:
+        a list of all orders in the coffee_shop within specific page and limit,
+        in addition to the total count of orders in the system
+    """
+
+    query = db.query(models.Order).options(joinedload(models.Order.items))
+    if coffee_shop_id:
+        query = (
+            query.join(models.OrderItem)
+            .join(models.MenuItem)
+            .filter(
+                models.MenuItem.coffee_shop_id == coffee_shop_id,
+                models.OrderItem.item_id == models.MenuItem.id,
+            )
+        )
+    if status:
+        query = query.filter(models.Order.status.in_(status))
+
+    # total count of orders
+    total_count: int = query.count()
+
+    # apply pagination
+    offset = (page - 1) * size
+    orders = query.offset(offset).limit(size).all()
+
+    return orders, total_count
+
+
+def get_all_orders(
+    status: list[OrderStatus], db: Session, coffee_shop_id: int, page: int, size: int
+) -> schemas.PaginatedOrderResponse:
+    """
+    This helper function used to get all orders along with their details (paginated)
+    *Args:
+        status (str): the status of the orders needed to be retrieved
+        db (Session): a database session
+        coffee_shop_id (int): id of the coffee shop to find the orders for
+        page (int): the page number, needed to calculate the offset to skip
+        size (int): the maximum limit of orders to return in the page
+    *Returns:
+        PaginatedOrderResponse instance contains the orders details
+    """
+
+    all_orders, total_count = _find_all_orders(
+        db=db, status=status, coffee_shop_id=coffee_shop_id, size=size, page=page
+    )
+
+    return schemas.PaginatedOrderResponse(
+        total_count=total_count,
+        page=page,
+        page_size=size,
+        orders=all_orders,
+    )
