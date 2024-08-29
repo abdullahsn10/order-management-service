@@ -13,3 +13,16 @@ class CustomerOrderReport(BaseModel):
     class Config:
         orm_mode = True
         from_attributes = True
+
+
+class ChefOrderReport(BaseModel):
+    """
+    pydantic model for chef order report
+    """
+
+    chef_id: int
+    served_orders: int
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
