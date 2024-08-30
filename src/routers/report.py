@@ -121,3 +121,36 @@ def list_issuers_orders_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
+
+
+@router.get(
+    "/coffee-shops/{coffee_shop_id}/orders-income",
+    response_model=schemas.OrderIncomeReport,
+)
+def list_orders_income_endpoint(
+    coffee_shop_id: int,
+    from_date: date,
+    to_date: date,
+    db: Session = Depends(get_db),
+    current_user: schemas.TokenData = Depends(require_role([UserRole.ADMIN])),
+):
+    """
+    GET endpoint to list total income from orders along with the number of orders
+    """
+    try:
+        check_if_user_can_access_shop(
+            user_coffee_shop_id=current_user.coffee_shop_id,
+            target_coffee_shop_id=coffee_shop_id,
+        )
+        return report.list_orders_income(
+            db=db,
+            coffee_shop_id=coffee_shop_id,
+            from_date=from_date,
+            to_date=to_date,
+        )
+    except OrderServiceException as se:
+        raise HTTPException(status_code=se.status_code, detail=se.message)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
