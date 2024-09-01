@@ -11,6 +11,7 @@ from src.settings.definition import ROLE_STATUS_MAPPING
 from src.security.roles import UserRole
 from src.utils.rabbitmq import RabbitMQClient
 from src.data.notification import Notification
+from src.settings.settings import RABBITMQ_HOST, ORDER_NOTIFICATION_QUEUE
 import json
 
 
@@ -103,8 +104,8 @@ def _create_order_notification(order_id: int, issuer_id: int, customer_id: int):
     )
     notification = json.dumps(notification.to_dict())
     (
-        RabbitMQClient().publish_message(
-            queue_name="order_notification", message=notification
+        RabbitMQClient(host=RABBITMQ_HOST).publish_message(
+            queue_name=ORDER_NOTIFICATION_QUEUE, message=notification
         )
     )
 
