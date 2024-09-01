@@ -10,6 +10,7 @@ from collections import defaultdict
 from src.settings.definition import ROLE_STATUS_MAPPING
 from src.security.roles import UserRole
 from src.utils.rabbitmq import RabbitMQClient
+from src.data.notification import Notification
 import json
 
 
@@ -93,14 +94,14 @@ def _create_order_notification(order_id: int, issuer_id: int, customer_id: int):
         None
     """
     message = f"Order with id={order_id} has been created successfully by issuer {issuer_id} for customer {customer_id}"
-    notification = {
-        "order_id": order_id,
-        "issuer_id": issuer_id,
-        "customer_id": customer_id,
-        "message": message,
-        "created_at": datetime.now().isoformat(),
-    }
-    notification = json.dumps(notification)
+    notification = Notification(
+        order_id=order_id,
+        issuer_id=issuer_id,
+        customer_id=customer_id,
+        message=message,
+        created_at=datetime.now(),
+    )
+    notification = json.dumps(notification.to_dict())
     (
         RabbitMQClient().publish_message(
             queue_name="order_notification", message=notification
