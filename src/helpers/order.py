@@ -9,6 +9,10 @@ from src.models.order import OrderStatus
 from collections import defaultdict
 from src.settings.definition import ROLE_STATUS_MAPPING
 from src.security.roles import UserRole
+from src.utils.rabbitmq import RabbitMQClient
+from src.data.notification import Notification
+from src.settings.settings import RABBITMQ_HOST, ORDER_NOTIFICATION_QUEUE
+import json
 
 
 def _validate_order_items(
@@ -80,6 +84,32 @@ def _create_order(
     return created_order
 
 
+def _create_order_notification(order_id: int, issuer_id: int, customer_id: int):
+    """
+    This helper function used to create a new order notification
+    *Args:
+        order_id (int): the order id
+        issuer_id (int): the issuer id of the order
+        customer_id (int): the customer id of the order
+    *Returns:
+        None
+    """
+    message = f"Order with id={order_id} has been created successfully by issuer {issuer_id} for customer {customer_id}"
+    notification = Notification(
+        order_id=order_id,
+        issuer_id=issuer_id,
+        customer_id=customer_id,
+        message=message,
+        created_at=datetime.now(),
+    )
+    notification = json.dumps(notification.to_dict())
+    (
+        RabbitMQClient(host=RABBITMQ_HOST).publish_message(
+            queue_name=ORDER_NOTIFICATION_QUEUE, message=notification
+        )
+    )
+
+
 def place_an_order(
     request: schemas.OrderPOSTRequestBody,
     coffee_shop_id: int,
@@ -116,6 +146,13 @@ def place_an_order(
         issuer_id=issuer_id,
         db=db,
         order_items=order_items,
+    )
+
+    # Create order notification
+    _create_order_notification(
+        order_id=created_order.id,
+        issuer_id=issuer_id,
+        customer_id=created_customer_instance.id,
     )
 
     return schemas.OrderPOSTResponse(
