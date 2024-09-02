@@ -72,8 +72,8 @@ def get_order_endpoint(
 @router.get("/", response_model=schemas.PaginatedOrderResponse)
 def get_all_orders_endpoint(
     order_status: Optional[List[OrderStatus]] = Query(default=None),
-    page: int = 1,
-    size: int = 10,
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1),
     db: Session = Depends(get_db),
     current_user: schemas.TokenData = Depends(
         require_role([UserRole.CHEF, UserRole.CASHIER, UserRole.ADMIN])
