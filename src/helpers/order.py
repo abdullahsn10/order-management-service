@@ -84,13 +84,16 @@ def _create_order(
     return created_order
 
 
-def _create_order_notification(order_id: int, issuer_id: int, customer_id: int):
+def _create_order_notification(
+    order_id: int, issuer_id: int, customer_id: int, coffee_shop_id: int
+):
     """
     This helper function used to create a new order notification
     *Args:
         order_id (int): the order id
         issuer_id (int): the issuer id of the order
         customer_id (int): the customer id of the order
+        coffee_shop_id (int): the coffee shop id of the order
     *Returns:
         None
     """
@@ -99,6 +102,7 @@ def _create_order_notification(order_id: int, issuer_id: int, customer_id: int):
         order_id=order_id,
         issuer_id=issuer_id,
         customer_id=customer_id,
+        coffee_shop_id=coffee_shop_id,
         message=message,
         created_at=datetime.now(),
     )
@@ -153,6 +157,7 @@ def place_an_order(
         order_id=created_order.id,
         issuer_id=issuer_id,
         customer_id=created_customer_instance.id,
+        coffee_shop_id=coffee_shop_id,
     )
 
     return schemas.OrderPOSTResponse(
