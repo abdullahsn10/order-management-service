@@ -18,6 +18,7 @@ from src.settings.settings import (
     ORDERS_CACHE_EXPIRATION,
 )
 from src.utils.redis_caching import get_cache, set_cache
+from src.utils.json_encoder import DateTimeEncoder
 import json
 
 
@@ -294,7 +295,7 @@ def get_all_orders(
     try:
         set_cache(
             key=cache_key,
-            value=json.dumps(response.dict()),
+            value=json.dumps(response.dict(), cls=DateTimeEncoder),
             expire=ORDERS_CACHE_EXPIRATION,
         )
         print(

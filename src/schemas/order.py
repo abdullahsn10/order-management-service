@@ -35,7 +35,7 @@ class OrderGETResponse(BaseModel):
     id: int
     issue_date: datetime
     issuer_id: int
-    status: OrderStatus
+    status: str  # OrderStatus
     customer_id: int
     items: list[MenuItemInGETOrderResponseBody]
 
