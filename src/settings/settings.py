@@ -34,3 +34,10 @@ COFFEE_SHOP_ENDPOINT = USER_SERVICE_BASE_URL + "/coffee-shops"
 # RabbitMQ and Notification Service settings
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
 ORDER_NOTIFICATION_QUEUE = os.getenv("ORDER_NOTIFICATION_QUEUE")
+
+# Redis settings
+REDIS = {
+    "HOST": os.getenv("REDIS_HOST"),
+    "PORT": os.getenv("REDIS_PORT"),
+    "DB": os.getenv("REDIS_DB"),
+}
