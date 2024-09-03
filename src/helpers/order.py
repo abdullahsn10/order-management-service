@@ -11,7 +11,13 @@ from src.settings.definition import ROLE_STATUS_MAPPING
 from src.security.roles import UserRole
 from src.utils.rabbitmq import RabbitMQClient
 from src.data.notification import Notification
-from src.settings.settings import RABBITMQ_HOST, ORDER_NOTIFICATION_QUEUE
+from src.settings.settings import (
+    RABBITMQ_HOST,
+    ORDER_NOTIFICATION_QUEUE,
+    ORDERS_CACHE_KEY,
+    ORDERS_CACHE_EXPIRATION,
+)
+from src.utils.redis_caching import get_cache, set_cache
 import json
 
 
@@ -235,7 +241,7 @@ def _find_all_orders(
         query = query.filter(models.Order.status.in_(status))
 
     # total count of orders
-    total_count: int = query.count()
+    total_count: int = query.distinct(models.Order.id).count()
 
     # apply pagination
     offset = (page - 1) * size
@@ -259,16 +265,45 @@ def get_all_orders(
         PaginatedOrderResponse instance contains the orders details
     """
 
+    cache_key = ORDERS_CACHE_KEY.format(
+        coffee_shop_id=coffee_shop_id, status=status, page=page, size=size
+    )
+    # Try to fetch the orders from cache
+    cached_orders = None
+    try:
+        cached_orders = get_cache(cache_key)
+        if cached_orders:
+            print(f"Cache hit for key {cache_key}")  # Will be replaced with logger
+            return schemas.PaginatedOrderResponse(**json.loads(cached_orders))
+    except Exception as e:
+        print(f"Error while fetching from cache: {e}")  # Will be replaced with logger
+
+    # if cache miss or read failed, fetch from database
     all_orders, total_count = _find_all_orders(
         db=db, status=status, coffee_shop_id=coffee_shop_id, size=size, page=page
     )
 
-    return schemas.PaginatedOrderResponse(
+    response = schemas.PaginatedOrderResponse(
         total_count=total_count,
         page=page,
         page_size=size,
         orders=all_orders,
     )
+
+    # Cache the response
+    try:
+        set_cache(
+            key=cache_key,
+            value=json.dumps(response.dict()),
+            expire=ORDERS_CACHE_EXPIRATION,
+        )
+        print(
+            f"Cache miss for key {cache_key}, cached the response"
+        )  # Will be replaced with logger
+    except Exception as e:
+        print(f"Error while caching the response: {e}")  # Will be replaced with logger
+
+    return response
 
 
 def _validate_status_change(new_status: str, user_role: str) -> None:
