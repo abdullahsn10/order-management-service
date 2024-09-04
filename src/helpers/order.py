@@ -17,7 +17,7 @@ from src.settings.settings import (
     ORDERS_CACHE_KEY,
     ORDERS_CACHE_EXPIRATION,
 )
-from src.utils.redis_caching import get_cache, set_cache
+from src.utils.redis_caching import CacheManager
 from src.utils.json_encoder import DateTimeEncoder
 import json
 
@@ -265,11 +265,12 @@ def _get_cached_orders(
     *Returns:
         a JSON / dictionary contains the cached orders if exists, None otherwise
     """
+    cache_manager = CacheManager()
     cache_key = ORDERS_CACHE_KEY.format(
         coffee_shop_id=coffee_shop_id, status=status, page=page, size=size
     )
     try:
-        cached_response = get_cache(key=cache_key)
+        cached_response = cache_manager.get_cache(key=cache_key)
         if cached_response:
             print(f"Cache hit for key {cache_key}")  # Will be replaced with logger
             return json.loads(cached_response)
@@ -298,11 +299,12 @@ def _cache_orders_response(
     *Returns:
         None
     """
+    cache_manager = CacheManager()
     cache_key = ORDERS_CACHE_KEY.format(
         coffee_shop_id=coffee_shop_id, status=status, page=page, size=size
     )
     try:
-        set_cache(
+        cache_manager.set_cache(
             key=cache_key,
             value=json.dumps(response.dict(), cls=DateTimeEncoder),
             expire=ORDERS_CACHE_EXPIRATION,
