@@ -34,3 +34,13 @@ COFFEE_SHOP_ENDPOINT = USER_SERVICE_BASE_URL + "/coffee-shops"
 # RabbitMQ and Notification Service settings
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
 ORDER_NOTIFICATION_QUEUE = os.getenv("ORDER_NOTIFICATION_QUEUE")
+
+# Redis and Cache settings
+REDIS = {
+    "HOST": os.getenv("REDIS_HOST"),
+    "PORT": os.getenv("REDIS_PORT"),
+    "DB": os.getenv("REDIS_DB"),
+}
+
+ORDERS_CACHE_KEY = "orders:{coffee_shop_id}:{status}:{page}:{size}"
+ORDERS_CACHE_EXPIRATION = 300  # 5 minutes
