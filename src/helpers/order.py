@@ -251,6 +251,66 @@ def _find_all_orders(
     return orders, total_count
 
 
+def _get_cached_orders(
+    coffee_shop_id: int, page: int, size: int, status: list[OrderStatus]
+) -> dict:
+    """
+    This helper function used to get all orders from the cache, All args are used to
+    create a unique key for the cache
+    *Args:
+        coffee_shop_id (int): id of the coffee shop to find the orders for
+        status (str): the status of the orders needed to be retrieved
+        page (int): the page number, needed to calculate the offset to skip
+        size (int): the maximum limit of orders to return in the page
+    *Returns:
+        a JSON / dictionary contains the cached orders if exists, None otherwise
+    """
+    cache_key = ORDERS_CACHE_KEY.format(
+        coffee_shop_id=coffee_shop_id, status=status, page=page, size=size
+    )
+    try:
+        cached_response = get_cache(key=cache_key)
+        if cached_response:
+            print(f"Cache hit for key {cache_key}")  # Will be replaced with logger
+            return json.loads(cached_response)
+        else:
+            print(f"Cache miss for key {cache_key}")  # Will be replaced with logger
+    except Exception as e:
+        print(f"Error while reading from cache: {e}")  # Will be replaced with logger
+    return None
+
+
+def _cache_orders_response(
+    coffee_shop_id: int,
+    status: list[OrderStatus],
+    page: int,
+    size: int,
+    response: schemas.PaginatedOrderResponse,
+) -> None:
+    """
+    This helper function used to cache the orders response
+    *Args:
+        coffee_shop_id (int): id of the coffee shop to find the orders for
+        status (str): the status of the orders needed to be retrieved
+        page (int): the page number, needed to calculate the offset to skip
+        size (int): the maximum limit of orders to return in the page
+        response (schemas.PaginatedOrderResponse): the response to be cached
+    *Returns:
+        None
+    """
+    cache_key = ORDERS_CACHE_KEY.format(
+        coffee_shop_id=coffee_shop_id, status=status, page=page, size=size
+    )
+    try:
+        set_cache(
+            key=cache_key,
+            value=json.dumps(response.dict(), cls=DateTimeEncoder),
+            expire=ORDERS_CACHE_EXPIRATION,
+        )
+    except Exception as e:
+        print(f"Error while writing to cache: {e}")  # Will be replaced with logger
+
+
 def get_all_orders(
     status: list[OrderStatus], db: Session, coffee_shop_id: int, page: int, size: int
 ) -> schemas.PaginatedOrderResponse:
@@ -266,18 +326,12 @@ def get_all_orders(
         PaginatedOrderResponse instance contains the orders details
     """
 
-    cache_key = ORDERS_CACHE_KEY.format(
+    cached_response = _get_cached_orders(
         coffee_shop_id=coffee_shop_id, status=status, page=page, size=size
     )
-    # Try to fetch the orders from cache
-    cached_orders = None
-    try:
-        cached_orders = get_cache(cache_key)
-        if cached_orders:
-            print(f"Cache hit for key {cache_key}")  # Will be replaced with logger
-            return schemas.PaginatedOrderResponse(**json.loads(cached_orders))
-    except Exception as e:
-        print(f"Error while fetching from cache: {e}")  # Will be replaced with logger
+
+    if cached_response:
+        return schemas.PaginatedOrderResponse(**cached_response)
 
     # if cache miss or read failed, fetch from database
     all_orders, total_count = _find_all_orders(
@@ -292,17 +346,13 @@ def get_all_orders(
     )
 
     # Cache the response
-    try:
-        set_cache(
-            key=cache_key,
-            value=json.dumps(response.dict(), cls=DateTimeEncoder),
-            expire=ORDERS_CACHE_EXPIRATION,
-        )
-        print(
-            f"Cache miss for key {cache_key}, cached the response"
-        )  # Will be replaced with logger
-    except Exception as e:
-        print(f"Error while caching the response: {e}")  # Will be replaced with logger
+    _cache_orders_response(
+        coffee_shop_id=coffee_shop_id,
+        status=status,
+        page=page,
+        size=size,
+        response=response,
+    )
 
     return response
 
