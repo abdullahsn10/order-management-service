@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package userservice;
+
+message CustomerPOSTRequestBody {
+  string name = 1;
+  string phone_no = 2;
+}
+
+message TokenData {
+  string token = 1;
+}
+
+message CustomerRequest {
+  CustomerPOSTRequestBody customer = 1;
+  TokenData token_data = 2;
+}
+
+message CustomerResponse {
+  int32 id = 1;
+  string name = 2;
+  string phone_no = 3;
+  int32 coffee_shop_id = 4;
+}
+
+message CustomerResponseWrapper {
+  CustomerResponse customer = 1;
+  int32 status_code = 2;
+}
+
+service UserService {
+  rpc GetOrCreateCustomer(CustomerRequest) returns (CustomerResponseWrapper);
+}
