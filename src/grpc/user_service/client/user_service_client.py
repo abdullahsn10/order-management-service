@@ -36,6 +36,7 @@ def get_or_create_customer_grpc(
                 created="2024-09-08 09:59:48.291854",  # Fake date, TODO: Implement this
             )
     except grpc.RpcError as e:
+        # TODO: Implement correct exception handling
         status_code = int(e.details()[0:3])
         message = e.details()[4:]
         raise OrderServiceException(
