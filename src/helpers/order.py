@@ -7,7 +7,7 @@ from src.exceptions import OrderServiceException
 from src.helpers import customer, menu_item, user
 from src.models.order import OrderStatus
 from collections import defaultdict
-from src.settings.definition import ROLE_STATUS_MAPPING
+from src.definition import ROLE_STATUS_MAPPING
 from src.security.roles import UserRole
 from src.utils.rabbitmq import RabbitMQClient
 from src.data.notification import Notification
