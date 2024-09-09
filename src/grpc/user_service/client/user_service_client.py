@@ -3,6 +3,7 @@ from src.grpc.user_service.protobuf import user_service_pb2, user_service_pb2_gr
 from src.exceptions.exception import OrderServiceException
 from src.settings.settings import USER_SERVICE_GRPC_ADDRESS
 from src import schemas
+from src.definition import GRPC_ERROR_MAPPING
 
 
 def get_or_create_customer_grpc(
@@ -36,10 +37,8 @@ def get_or_create_customer_grpc(
                 created="2024-09-08 09:59:48.291854",  # Fake date, TODO: Implement this
             )
     except grpc.RpcError as e:
-        # TODO: Implement correct exception handling
-        status_code = int(e.details()[0:3])
-        message = e.details()[4:]
-        raise OrderServiceException(
-            message=message,
-            status_code=status_code,
+        status_code = (
+            GRPC_ERROR_MAPPING.get(e.code()) if e.code() in GRPC_ERROR_MAPPING else 500
         )
+        message = e.details() if e.details() else "Internal Server Error"
+        raise OrderServiceException(status_code=status_code, message=message)
