@@ -2,15 +2,16 @@ import pika
 
 
 class RabbitMQClient:
-    def __init__(self, host="localhost"):
+    def __init__(self, host="localhost", username="guest", password="guest"):
         self.host = host
+        self.credentials = pika.PlainCredentials(username, password)
         self.connection = None
         self.channel = None
 
     def _connect(self):
         if self.connection is None or self.connection.is_closed:
             self.connection = pika.BlockingConnection(
-                pika.ConnectionParameters(self.host)
+                pika.ConnectionParameters(host=self.host, credentials=self.credentials)
             )
             self.channel = self.connection.channel()
 

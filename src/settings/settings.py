@@ -45,6 +45,8 @@ COFFEE_SHOP_ENDPOINT = USER_SERVICE_BASE_URL + "/coffee-shops"
 
 # RabbitMQ and Notification Service settings
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
+RABBITMQ_USER = os.getenv("RABBITMQ_USER")
+RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
 ORDER_NOTIFICATION_QUEUE = os.getenv("ORDER_NOTIFICATION_QUEUE")
 
 # Redis and Cache settings

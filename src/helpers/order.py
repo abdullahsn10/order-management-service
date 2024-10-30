@@ -13,6 +13,8 @@ from src.utils.rabbitmq import RabbitMQClient
 from src.data.notification import Notification
 from src.settings.settings import (
     RABBITMQ_HOST,
+    RABBITMQ_USER,
+    RABBITMQ_PASSWORD,
     ORDER_NOTIFICATION_QUEUE,
     ORDERS_CACHE_KEY,
     ORDERS_CACHE_EXPIRATION,
@@ -115,9 +117,11 @@ def _create_order_notification(
     )
     notification = json.dumps(notification.to_dict())
     (
-        RabbitMQClient(host=RABBITMQ_HOST).publish_message(
-            queue_name=ORDER_NOTIFICATION_QUEUE, message=notification
-        )
+        RabbitMQClient(
+            host=RABBITMQ_HOST,
+            username=RABBITMQ_USER,
+            password=RABBITMQ_PASSWORD,
+        ).publish_message(queue_name=ORDER_NOTIFICATION_QUEUE, message=notification)
     )
 
 
