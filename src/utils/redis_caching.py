@@ -4,7 +4,12 @@ from src.settings.settings import REDIS
 
 class CacheManager:
     def __init__(self):
-        self.cache = redis.Redis(host=REDIS["HOST"], port=REDIS["PORT"], db=REDIS["DB"])
+        self.cache = redis.Redis(
+            host=REDIS["HOST"],
+            password=REDIS["PASSWORD"],
+            port=REDIS["PORT"],
+            db=REDIS["DB"],
+        )
 
     def set_cache(self, key: str, value: str, expire: int) -> None:
         """

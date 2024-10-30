@@ -54,6 +54,7 @@ REDIS = {
     "HOST": os.getenv("REDIS_HOST"),
     "PORT": os.getenv("REDIS_PORT"),
     "DB": os.getenv("REDIS_DB"),
+    "PASSWORD": os.getenv("REDIS_PASSWORD"),
 }
 
 ORDERS_CACHE_KEY = "orders:{coffee_shop_id}:{status}:{page}:{size}"
